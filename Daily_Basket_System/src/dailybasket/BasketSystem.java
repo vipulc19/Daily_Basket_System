@@ -1,92 +1,112 @@
 package dailybasket;
 
-import dailybasket.entities.Cart;
-import dailybasket.entities.Inventory;
-import dailybasket.entities.Item;
-import dailybasket.entities.User;
+import dailybasket.entities.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class BasketSystem {
 
-
-
-    HashMap<String, Integer> itemToPrice;
-
-    HashMap<String, Integer> itemsToQuantity;
-
-    HashMap<User, HashMap<String, Integer>> userToCartItems;
-
-    HashMap<String, User> userNameToUser;
-
+    private final HashMap<String, User> userMap;
+    private final HashMap<Item, Integer> itemToPrice;
+    private HashMap<Item, Integer> itemToQuantity;
 
     public BasketSystem() {
+        userMap = new HashMap<>();
         itemToPrice = new HashMap<>();
-        userToCartItems = new HashMap<>();
-        itemsToQuantity = new HashMap<>();
-        userNameToUser = new HashMap<>();
+        itemToQuantity = new HashMap<>();
     }
 
     void createItem(String itemCategory, String brand, int price) {
 
-        itemToPrice.put(itemCategory + "#" + brand, price);
+        itemToPrice.put(new Item(itemCategory, brand), price);
         System.out.println("Item Added Successfully");
     }
 
     void addInventory(String itemCategory, String brand, int quantity) {
-        itemsToQuantity.put(itemCategory + "#" + brand, quantity);
+        itemToQuantity.put(new Item(itemCategory, brand), quantity);
     }
 
     void addUser(String userName, int walletAmount) {
-
-        User u = new User(userName, walletAmount);
-        userNameToUser.put(userName, new User(userName, walletAmount));
-        userToCartItems.put(u, new HashMap<>());
-
+        userMap.put(userName, new User(userName, walletAmount));
     }
 
     void addToCart(String userName, String itemCategory, String brand, int requiredQuantity) {
 
-        HashMap<String,Integer> hashMap = new HashMap<>();
-        hashMap.put(itemCategory + "#" + brand, requiredQuantity);
+        User user = userMap.get(userName);
+        Item item = new Item(itemCategory, brand);
 
-        userToCartItems.put(userNameToUser.get(userName), hashMap);
+        int walletAmount = user.getWalletAmount();
+
+        try {
+            if (itemToPrice.get(item) * requiredQuantity <= user.getWalletAmount() && requiredQuantity < itemToQuantity.get(item)) {
+                user.setWalletAmount(walletAmount - requiredQuantity * itemToPrice.get(item));
+                user.getUserCart().addItemsToCart(item, requiredQuantity);
+            } else {
+                throw new InvalidRequestException("AddToCart:" + user + " Not Authorised! Remaining Balance:" + walletAmount + " " + item);
+            }
+        } catch (InvalidRequestException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     void updateCart(String userName, String itemCategory, String brand, int requiredQuantity) {
-        userToCartItems.get(userNameToUser.get(userName)).put(itemCategory + "#" + brand, requiredQuantity);
+        User user = userMap.get(userName);
+        Item item = new Item(itemCategory, brand);
+        int walletAmount = user.getWalletAmount();
+
+        int prevQuantity = user.getUserCart().getItemsinCart().get(item);
+        int prevAmount = prevQuantity * itemToPrice.get(item);
+        walletAmount += prevAmount;
+
+        try {
+            if (itemToPrice.get(item) * requiredQuantity < walletAmount && requiredQuantity < itemToQuantity.get(item)) {
+                user.setWalletAmount(walletAmount - requiredQuantity * itemToPrice.get(item));
+                user.getUserCart().getItemsinCart().put(item, requiredQuantity);
+            } else
+                throw new InvalidRequestException("UpdateCart: " + user + " Not Authorised! Remaining Balance:" + walletAmount + " " + item);
+        } catch (InvalidRequestException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     void removeFromCart(String userName, String itemCategory, String brand) {
-        userToCartItems.get(userNameToUser.get(userName)).remove(itemCategory + "#" + brand);
+        User user = userMap.get(userName);
+        Item item = new Item(itemCategory, brand);
+        user.getUserCart().getItemsinCart().remove(item);
     }
 
     void getCart(String userName) {
-
-        HashMap<String, Integer> itemToQ = userToCartItems.get(userNameToUser.get(userName));
-
-        for (Map.Entry<String, Integer> entry : itemToQ.entrySet()) {
-            System.out.print("Item Category & Brand: " + entry.getKey());
-            System.out.println(", Quantity: " + entry.getValue());
-        }
-
+        User user = userMap.get(userName);
+        System.out.println(userName + "Cart: ");
+        for (Map.Entry<Item, Integer> entry : user.getUserCart().getItemsinCart().entrySet())
+            System.out.println(entry.getKey());
+        System.out.println();
     }
 
     void cartCheckout(String userName) {
 
-        HashMap<String, Integer> itemToQ = userToCartItems.get(userNameToUser.get(userName));
+        User user = userMap.get(userName);
+        int walletAmount = user.getWalletAmount();
+        HashMap<Item, Integer> initialHashMap = new HashMap<>(itemToQuantity);
 
-        for (Map.Entry<String, Integer> entry : itemToQ.entrySet()) {
-
-            int actualQuantity = itemsToQuantity.get(entry.getKey());
-            int requiredQuantity = entry.getValue();
-            int diff = actualQuantity - requiredQuantity;
-            System.out.println("Remaining Quantity: "+ diff);
-            itemsToQuantity.put(entry.getKey(), diff);
+        try {
+            for (Map.Entry<Item, Integer> item : user.getUserCart().getItemsinCart().entrySet()) {
+                int actualQuantity = initialHashMap.get(item.getKey());
+                int requiredQuantity = item.getValue();
+                if (requiredQuantity > actualQuantity) {
+                    throw new InvalidRequestException("cartCheckout: " + user + " Not Authorised! Required Quantity more than actual for " + item + " Rolling Back");
+                }
+                int diff = actualQuantity - requiredQuantity;
+                System.out.println(item.getKey() + " Remaining quantity: " + diff);
+                initialHashMap.put(item.getKey(), diff);
+                walletAmount = walletAmount - requiredQuantity * itemToPrice.get(item.getKey());
+            }
+            user.setWalletAmount(walletAmount);
+            this.itemToQuantity = initialHashMap;
+        } catch (InvalidRequestException e) {
+            System.out.println(e.getMessage());
         }
     }
-
 
 }

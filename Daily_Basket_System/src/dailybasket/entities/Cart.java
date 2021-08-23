@@ -1,12 +1,20 @@
 package dailybasket.entities;
 
+import java.util.HashMap;
+
 public class Cart {
 
-    String userName;
-    String itemCategory;
-    String brand;
-    int quantity;
+    private final HashMap<Item, Integer> itemList;
 
+    public Cart(){
+        this.itemList = new HashMap<>();
+    }
 
+    public void addItemsToCart(Item item, int quantity){
+        itemList.put(item, quantity);
+    }
 
+    public HashMap<Item, Integer> getItemsinCart() {
+        return itemList;
+    }
 }

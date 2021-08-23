@@ -2,46 +2,40 @@ package dailybasket.entities;
 
 public class Item {
 
-    String itemCategory;
-    String brand;
-    int price;
-    int quantity;
+    private final String itemCategory;
+    private final String brand;
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public Item(String itemCategory, String brand, int price) {
+    public Item(String itemCategory, String brand) {
         this.itemCategory = itemCategory;
         this.brand = brand;
-        this.price = price;
     }
 
-    public String getItemCategory() {
-        return itemCategory;
+    @Override
+    public int hashCode() {
+        return itemCategory.hashCode() + brand.hashCode();
     }
 
-    public void setItemCategory(String itemCategory) {
-        this.itemCategory = itemCategory;
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+        Item other = (Item)o;
+        return this.itemCategory.equals(other.itemCategory) && this.brand.equals(other.brand);
     }
 
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
+    @Override
+    public String toString() {
+        return "Item{" +
+                "itemCategory='" + itemCategory + '\'' +
+                ", brand='" + brand + '\'' +
+                '}';
     }
 }

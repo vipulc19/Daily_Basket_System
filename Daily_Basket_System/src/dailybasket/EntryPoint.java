@@ -19,14 +19,21 @@ public class EntryPoint {
         basketSystem.addUser("Amit", 500);
         basketSystem.addUser("Goku", 1000);
 
-
-
         basketSystem.addToCart("Amit", "Milk", "Amul", 5);
         basketSystem.addToCart("Amit", "Chocolate", "Cadbury", 10);
+        basketSystem.updateCart("Amit","Milk","Amul",4);
+
+        basketSystem.addToCart("Amit","Chocolate","Parle",2);
+        basketSystem.removeFromCart("Amit","Chocolate","Parle");
+
         basketSystem.getCart("Amit");
-        //basketSystem.cartCheckout("Amit");
 
+        basketSystem.addToCart("Goku", "Milk", "Amul", 7);
+        basketSystem.addToCart("Goku", "Chocolate", "Cadbury", 2);
+        basketSystem.getCart("Goku");
 
+        basketSystem.cartCheckout("Amit");
 
+        basketSystem.cartCheckout("Goku");
     }
 }

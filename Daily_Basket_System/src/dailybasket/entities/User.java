@@ -2,22 +2,14 @@ package dailybasket.entities;
 
 public class User {
 
-    String userName;
-    int walletAmount;
-
-    Cart userCart;
+    private final String userName;
+    private int walletAmount;
+    private final Cart userCart;
 
     public User(String userName, int walletAmount) {
         this.userName = userName;
         this.walletAmount = walletAmount;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
+        this.userCart = new Cart();
     }
 
     public int getWalletAmount() {
@@ -32,7 +24,33 @@ public class User {
         return userCart;
     }
 
-    public void setUserCart(Cart userCart) {
-        this.userCart = userCart;
+    @Override
+    public int hashCode() {
+        return userName.hashCode();
     }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+        User other = (User)o;
+        return this.userName.equals(other.userName);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userName='" + userName + '\'' +
+                ", walletAmount=" + walletAmount +
+                '}';
+    }
+
 }
