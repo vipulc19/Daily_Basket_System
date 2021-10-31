@@ -32,15 +32,15 @@ public class User {
     @Override
     public boolean equals(Object o) {
 
-        if (this == o) {
+        if (this == o) 
             return true;
-        }
-        if (o == null) {
+        
+        if (o == null) 
             return false;
-        }
-        if (this.getClass() != o.getClass()) {
+        
+        if (this.getClass() != o.getClass()) 
             return false;
-        }
+        
         User other = (User)o;
         return this.userName.equals(other.userName);
     }
